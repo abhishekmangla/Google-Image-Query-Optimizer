@@ -2,20 +2,23 @@
 #https://github.com/hardikvasa/google-images-download/blob/master/google-images-download.py
 #Import Libraries
 #use python3.5 genart.py
+#!/usr/bin/python3
 
 import time       #Importing the time library to check the time of code execution
 import sys    #Importing the System Library
 import urllib.request
 import numpy as np
 from PIL import Image
+from urllib.request import Request, urlopen
+from urllib.request import URLError, HTTPError
 
 ########### Edit From Here ###########
 
 #This list is used to search keywords. You can edit this list to search for google images of your choice. You can simply add and remove elements of the list.
-search_keyword = ['Rose', 'Rare']
+search_keyword = ["Rose", "Blue"]
 
 #This list is used to further add suffix to your search term. Each element of the list will help you download 100 images. First element is blank which denotes that no suffix is added to the search keyword of the above list. You can edit the list by adding/deleting elements from it.So if the first element of the search_keyword is 'Australia' and the second element of keywords is 'high resolution', then it will search for 'Australia High Resolution'
-keywords = ['high resolution']
+keywords = ["high resolution", "Blue"]
 
 ########### End of Editing ###########
 
@@ -23,24 +26,25 @@ keywords = ['high resolution']
 def download_page(url):
     version = (3,0)
     cur_version = sys.version_info
+
     if cur_version >= version:     #If the Current Version of Python is 3.0 or above
-        import urllib.request    #urllib library for Extracting web pages
+        # import urllib.request    #urllib library for Extracting web pages
         try:
             headers = {}
             headers['User-Agent'] = "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"
-            req = urllib.request.Request(url, headers = headers)
-            resp = urllib.request.urlopen(req)
+            req = Request(url, headers = headers)
+            resp = urlopen(req)
             respData = str(resp.read())
             return respData
         except Exception as e:
             print(str(e))
     else:                        #If the Current Version of Python is 2.x
-        import urllib2
+        # from urllib.request
         try:
             headers = {}
             headers['User-Agent'] = "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"
-            req = urllib2.Request(url, headers = headers)
-            response = urllib2.urlopen(req)
+            req = Request(url, headers = headers)
+            response = urlopen(req)
             page = response.read()
             return page
         except:
@@ -80,32 +84,26 @@ def _images_get_all_items(page):
 t0 = time.time()   #start the timer
 
 #Download Image Links
-i= 0
-while i<len(search_keyword):
-    items = []
-    iteration = "Item no.: " + str(i+1) + " -->" + " Item name = " + str(search_keyword[i])
-    print (iteration)
-    print ("Evaluating...")
-    search_keywords = search_keyword[i]
-    search = search_keywords.replace(' ','%20')
-    j = 0
-    while j<len(keywords):
-        pure_keyword = keywords[j].replace(' ','%20')
-        url = 'https://www.google.com/search?q=' + search + pure_keyword + '&espv=2&biw=1366&bih=667&site=webhp&source=lnms&tbm=isch&sa=X&ei=XosDVaCXD8TasATItgE&ved=0CAcQ_AUoAg'
-        raw_html =  (download_page(url))
-        time.sleep(0.1)
-        items = items + (_images_get_all_items(raw_html))
-        j = j + 1
-    #print ("Image Links = "+str(items))
-    print ("Total Image Links = "+str(len(items)))
-    print ("\n")
-    i = i+1
+items = []
+search = ""
+#not using keywords
+for keyword in search_keyword:
+    pure_keyword = keyword.replace(' ','%20')
+    search += pure_keyword
+
+url = 'https://www.google.com/search?q=' + search + '&espv=2&biw=1366&bih=667&site=webhp&source=lnms&tbm=isch&sa=X&ei=XosDVaCXD8TasATItgE&ved=0CAcQ_AUoAg'
+raw_html =  (download_page(url))
+time.sleep(0.1)
+items = (_images_get_all_items(raw_html))
+#print ("Image Links = "+str(items))
+print ("Total Image Links = "+str(len(items)))
+print ("\n")
 
 
-    #This allows you to write all the links into a test file. This text file will be created in the same directory as your code. You can comment out the below 3 lines to stop writing the output to the text file.
-    info = open('output.txt', 'a')        #Open the text file called database.txt
-    info.write(str(i) + ': ' + str(search_keyword[i-1]) + ": " + str(items) + "\n\n\n")         #Write the title of the page
-    info.close()                            #Close the file
+#This allows you to write all the links into a test file. This text file will be created in the same directory as your code. You can comment out the below 3 lines to stop writing the output to the text file.
+# info = open('output.txt', 'a')        #Open the text file called database.txt
+# info.write(str(i) + ': ' + str(search_keyword[i-1]) + ": " + str(items) + "\n\n\n")         #Write the title of the page
+# info.close()                            #Close the file
 
 t1 = time.time()    #stop the timer
 total_time = t1-t0   #Calculating the total time required to crawl, find and download all the links of 60,000 images
@@ -117,18 +115,15 @@ print ("Starting Download...")
 
 k=0
 errorCount=0
-#while(k<len(items)):
-while(k<10):
-    from urllib.request import Request, urlopen
-    from urllib.request import URLError, HTTPError
-
+while(k<len(items)):
+# while(k<10):
     try:
         req = Request(items[k], headers={"User-Agent": "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"})
-        print(req)
         response = urlopen(req)
-        output_file = open(str(k+1)+".jpg",'wb')
-        image = Image.open(str(k+1)+".jpg")
-        image.show()
+        output_file = open(str(k+1) + ".jpg","wb")
+        # image = Image.open(str(k+1)+".jpg")
+        # print(image)
+        # image.show()
         # img = cv2.imread(output_file,0)
         # cv2.namedWindow(output_file, cv2.WINDOW_NORMAL)
         # cv2.imshow(output_file,img)
@@ -142,7 +137,6 @@ while(k<10):
         print("completed ====> "+str(k+1))
 
         k=k+1;
-        break
 
     except IOError:   #If there is any IOError
 
@@ -164,6 +158,9 @@ while(k<10):
 print("\n")
 print("All are downloaded")
 print("\n"+str(errorCount)+" ----> total Errors")
+
+# image = Image.open(str(1)+".jpg")
+# image.show()
 
 
 #----End of the main program ----#
