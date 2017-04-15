@@ -38,7 +38,7 @@ Image Identifier (second GIQ): professional classy
 
 Expected Output or Image that will open is collage of top 3 most representative responses to what you queried:
 
-![Alt text](collage.jpg?raw=true "collage")
+![Alt text](Collage.jpg?raw=true "collage")
 
 
 
