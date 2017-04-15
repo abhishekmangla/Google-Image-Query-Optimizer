@@ -1,11 +1,17 @@
-#Searching and Downloading Google Images/Image Links
-#https://github.com/hardikvasa/google-images-download/blob/master/google-images-download.py
+"""
+Author: Abhishek Mangla
+My Github: https://github.com/abhishekmangla
 
-#pip3 install numpy
-#pip3 install Pillow
-#pip3 install -U scikit-image
-#to run: python3 genart.py
+Searching and Downloading Google Images/Image Links:
+https://github.com/hardikvasa/google-images-download/blob/master/google-images-download.py
 
+pip3 install numpy
+pip3 install Pillow
+pip3 install -U scikit-image
+
+to run: python3 genart.py
+
+"""
 import time
 import sys
 import urllib.request
@@ -15,8 +21,6 @@ from urllib.request import Request, urlopen
 from urllib.request import URLError, HTTPError
 import priorityQueue
 import itertools
-# from multiprocessing import Pool
-# from functools import partial
 from skimage.measure import compare_ssim as ssim
 
 def mse(imageA, imageB):
@@ -99,7 +103,7 @@ def _images_get_all_items(page):
 
 
 ############## Main Program ############
-def prelim():
+def prelim(typer):
     t0 = time.time()   #start the timer
 
     #Download Image Links
@@ -138,12 +142,16 @@ def prelim():
         try:
             req = Request(items[k], headers={"User-Agent": "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"})
             response = urlopen(req)
-            output_file = open(str(k+1) + ".jpg","wb")
+            output_file = open(typer+str(k+1) + ".jpg","wb")
             data = response.read()
             output_file.write(data)
             response.close();
-            image = Image.open(str(k+1)+".jpg")
-            images[str(k+1)+".jpg"] = image
+            image = Image.open(typer+str(k+1)+".jpg")
+            if typer == "firstSet":
+                images[typer+str(k+1)+".jpg"] = image
+            else:
+                secondImages[typer+str(k+1)+".jpg"] = image
+
             print("completed ====> "+str(k+1))
             k=k+1;
         except IOError:   #If there is any IOError
@@ -163,12 +171,11 @@ def prelim():
     print("All are downloaded")
     print("\n"+str(errorCount)+" ----> total Errors")
 
-def computeSimilarity(orig_image, images):
+def computeSimilarity(orig_image, imagesToCompare):
     running_sum = 0
-    for imageName in images.keys():
-        image = images[imageName]
-        orig_image_size = orig_image.size
-        running_sum += mse(orig_image, image.resize(orig_image_size))
+    for imageName in imagesToCompare.keys():
+        image = imagesToCompare[imageName]
+        running_sum += mse(orig_image, image.resize(orig_image.size))
         # lst1 = list(orig_image.getdata())
         # lst1_flattened = list(itertools.chain(*lst1))
         # # lst1_flattened = np.array(lst1_flattened)
@@ -177,7 +184,7 @@ def computeSimilarity(orig_image, images):
         # lst2_flattened = np.array(lst2_flattened)
         # running_sum += ssim(lst1_flattened, lst2_flattened)
     print("computed similarity")
-    return running_sum / len(images.keys())
+    return running_sum / len(imagesToCompare.keys())
 
 def create_collage(width, height, listofimages):
     cols = 3
@@ -208,18 +215,21 @@ def create_collage(width, height, listofimages):
 
 if __name__ == '__main__':
     #This list is used to search keywords. You can edit this list to search for google images of your choice. You can simply add and remove elements of the list.
-    oi = input("Enter your object of interest: ")
-    adj1 = input("Adjective 1: ")
+    oi = input("Enter Google Image Query (GIQ): ")
+    adj1 = input("Image Identifier (second GIQ): ")
     search_keyword = [oi]
     # pool = Pool(processes=6)
     images = {}
+    secondImages = {}
     pq = priorityQueue.PriorityQueue()
     #This list is used to further add suffix to your search term. Each element of the list will help you download 100 images. First element is blank which denotes that no suffix is added to the search keyword of the above list. You can edit the list by adding/deleting elements from it.So if the first element of the search_keyword is 'Australia' and the second element of keywords is 'high resolution', then it will search for 'Australia High Resolution'
-    keywords = ["high resolution", "Blue"]
-    prelim()
+    # keywords = ["high resolution", "Blue"]  #not being used
+    prelim("firstSet")
+    search_keyword = [adj1]
+    prelim("secondSet")
     for imageName in images.keys():
         image = images[imageName]
-        pq.update(imageName, computeSimilarity(image, images))
+        pq.update(imageName, computeSimilarity(image, secondImages))
         # args.append(image)
         # order.append(imageName)
 
@@ -235,17 +245,15 @@ if __name__ == '__main__':
     #     pq.update(imageName, similarity)
     order = []
     for i in range(3):
-        imageName = pq.pop()[1]
+        p = pq.pop()
+        print(p)
+        imageName = p[1]
         print(i, " : ", imageName)
         order.append(imageName)
         # image = Image.open(imageName)
         # image.show()
 
-    create_collage(450, 300, order)
+    create_collage(450, 150, order)
     image = Image.open("Collage.jpg")
     image.show()
-
-#idea: get top 10 best representative images for the search query based on similarity with the
-#100 responses, then make a collage of these with biggest representing best, smallest representing worst
-
 #----End of the main program ----#
