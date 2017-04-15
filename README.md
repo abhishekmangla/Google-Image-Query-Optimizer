@@ -28,8 +28,19 @@ pip3 install -U scikit-image
 
 ## Example
 
+# Input
+
 Enter Google Image Query (GIQ): Iron Man
+
 Image Identifier (second GIQ): professional classy
+
+# Output
+
+Expected Output or Image that will open is collage of top 3 most representative responses to what you queried:
+
+![Alt text](collage.jpg?raw=true "collage")
+
+
 
 
 ## Built With
